@@ -2,21 +2,19 @@ import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { MultipleSelectList } from "react-native-dropdown-select-list";
 
-export default function Home({ items, data, categoryData }) {
+export default function Home({ datas }) {
   const [selected, setSelected] = useState([]);
-  
+  console.log(datas)
+
   return (
     <View style={{ padding: 20 }}>
-      <MultipleSelectList
+      {/* <MultipleSelectList
         setSelected={(val) => setSelected(val)}
-        data={categoryData}
+        data={data}
         save="value"
         onSelect={() => alert(selected)}
         label="Categories"
-      />
-      {items.map((item) => {
-        return <Text>{item.name}</Text>;
-      })}
+      /> */}
     </View>
   );
 }

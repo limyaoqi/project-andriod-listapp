@@ -4,33 +4,38 @@ import { Text, View, TextInput, Button, StyleSheet, Image } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native";
 
-export default function AddItem({ items, categoryData, handleRefresh }) {
+export default function AddItem() {
   const id = uuid.v4();
-  const navigation = useNavigation();
-  const [item, setItems] = useState(items);
+  
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
   const [image, setImage] = useState(null);
 
+  useEffect(() => {
+    loadCategory();
+  }, []);
+
+  const loadCategory = async () => {
+    try {
+      const storedCategories = await AsyncStorage.getItem("Categories");
+      if (storedCategories) {
+        setCategories(JSON.parse(storedCategories));
+      }
+      categories.map((category) => {
+        setCategory({
+          key: id,
+          value: category,
+        });
+      });
+    } catch (error) {
+      console.error("Error loading categories from AsyncStorage: ", error);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!itemName.trim()) {
-      alert("Item name is required.");
-      return;
-    }
-
-    if (!quantity.trim() || isNaN(quantity)) {
-      alert("Quantity must be a valid number.");
-      return;
-    }
-
-    if (!category) {
-      alert("Please select a category.");
-      return;
-    }
-
     try {
       const newItem = {
         id,
@@ -40,20 +45,12 @@ export default function AddItem({ items, categoryData, handleRefresh }) {
         image,
       };
 
-      setItems((prevItems) => [...prevItems, newItem]);
-
-      await AsyncStorage.setItem("Items", JSON.stringify([...items, newItem]));
-      handleRefresh();
-      setItemName("");
-      setQuantity("");
-      setCategory(null);
-      setImage(null);
+      // Save the item data to AsyncStorage
+      await AsyncStorage.setItem("Items", JSON.stringify(newItem));
 
       console.log("Item data saved successfully!");
-      navigation.navigate("Home");
     } catch (error) {
       console.error("Error saving item data:", error);
-      alert("Error", error.message);
     }
   };
 
@@ -82,16 +79,17 @@ export default function AddItem({ items, categoryData, handleRefresh }) {
       paddingLeft: 20,
     },
     imageContainer: {
-      alignItems: "center",
-      marginBottom: 20,
+      alignItems: "center", 
+      marginBottom: 20, 
     },
     image: {
       width: 200,
-      height: 200,
-      resizeMode: "cover",
-      borderRadius: 10,
+      height: 200, 
+      resizeMode: "cover", 
+      borderRadius: 10, 
     },
   });
+
   return (
     <View style={{ padding: 20 }}>
       <Text style={{ fontSize: 20, marginBottom: 10 }}>Add Item</Text>
@@ -115,15 +113,13 @@ export default function AddItem({ items, categoryData, handleRefresh }) {
         label="Category"
         placeholder="Select Category"
         setSelected={(val) => setCategory(val)}
-        data={categoryData}
+        data={categories}
         search={false}
+        // boxStyles={{ marginBottom: 5 }}
+        // dropdownStyles={{ marginBottom: 5 }}
       />
       <View style={{ marginBottom: 10, marginTop: 10 }}>
-        <Button
-          title="Select Image"
-          onPress={pickImage}
-          style={{ marginBottom: 5 }}
-        />
+        <Button title="Select Image" onPress={pickImage} />
         {image && (
           <View style={styles.imageContainer}>
             <Image source={image} style={styles.image} />
